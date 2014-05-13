@@ -433,10 +433,10 @@ gethomefile(const char *filename)
 	if (!(home = getenv("HOME")))
 		errx(1, "can't find HOME");
 	snprintf(buf, sizeof(buf), "%s/.reop", home);
-	if (stat(buf, &sb) == -1 || !S_ISDIR(sb.st_mode)){
-		if (mkdir(buf, 0700) < 0)
+	if ((stat(buf, &sb) == -1 || !S_ISDIR(sb.st_mode)) && \
+		mkdir(buf, 0700) < 0) {
 			printf("Could not create directory '%.200s'.", buf);
-		usage("Can't use default files without ~/.reop");
+			usage("Can't use default files without ~/.reop");
 	}
 	snprintf(buf, sizeof(buf), "%s/.reop/%s", home, filename);
 	return buf;
