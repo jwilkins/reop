@@ -118,13 +118,23 @@ usage(const char *error)
 {
 	if (error)
 		fprintf(stderr, "%s\n", error);
-	fprintf(stderr, "usage:"
+	fprintf(stderr, "usage:\n"
+	    "  Generate a keypair:\n"
 	    "\treop -G [-n] [-i ident] [-p pubkey -s seckey]\n"
-	    "\treop -A [-i ident] [-p pubkey -s seckey] -m message [-x encfile]\n"
-	    "\treop -D [-i ident] [-p pubkey -s seckey] -m message [-x encfile]\n"
-	    "\treop -E [-i ident] [-p pubkey -s seckey] -m message [-x encfile]\n"
-	    "\treop -S [-e] [-x sigfile] -s seckey -m message\n"
-	    "\treop -V [-eq] [-x sigfile] -p pubkey -m message\n"
+            "\t  -n: no passphrase protection\n"
+	    "  Encrypt a message:\n"
+	    "\treop -E [-i ident] [-p pubkey -s seckey] -m messagefile [-x encfile]\n"
+            "\t  -x: default is message.enc\n"
+	    "  Decrypt a message:\n"
+	    "\treop -D [-i ident] [-p pubkey -s seckey] -m messagefile [-x encfile]\n"
+	    "  Sign a message:\n"
+	    "\treop -S [-e] [-x sigfile] -s seckey -m messagefile\n"
+            "\t  -e: output signed message (default is detatched signature)\n"
+            "\t  -x: default is message.sig\n"
+	    "  Verify a signed message:\n"
+	    "\treop -V [-eq] [-x sigfile] -p pubkey -m messagefile\n"
+	    "  Asymmetricly encrypt a message (with ephemeral key):\n"
+	    "\treop -A [-i ident] [-p pubkey -s seckey] -m messagefile [-x encfile]\n"
 	    );
 	exit(1);
 }
@@ -423,8 +433,11 @@ gethomefile(const char *filename)
 	if (!(home = getenv("HOME")))
 		errx(1, "can't find HOME");
 	snprintf(buf, sizeof(buf), "%s/.reop", home);
-	if (stat(buf, &sb) == -1 || !S_ISDIR(sb.st_mode))
+	if (stat(buf, &sb) == -1 || !S_ISDIR(sb.st_mode)){
+		if (mkdir(buf, 0700) < 0)
+			printf("Could not create directory '%.200s'.", buf);
 		usage("Can't use default files without ~/.reop");
+	}
 	snprintf(buf, sizeof(buf), "%s/.reop/%s", home, filename);
 	return buf;
 }
